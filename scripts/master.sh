@@ -37,7 +37,22 @@ kubectl apply -f calico.yaml
 # Install Metrics Server
 
 #kubectl apply -f https://raw.githubusercontent.com/scriptcamp/kubeadm-scripts/main/manifests/metrics-server.yaml
-kubectl apply -f https://raw.githubusercontent.com/ameizi/vagrant-kubernetes-cluster/master/metrics/metrics.yaml
+#kubectl apply -f https://raw.githubusercontent.com/ameizi/vagrant-kubernetes-cluster/master/metrics/metrics.yaml
+curl https://raw.githubusercontent.com/ameizi/vagrant-kubernetes-cluster/master/metrics/metrics.yaml -O
+sed -i 's#registry.aliyuncs.com/k8sxio/metrics-server:v0.4.3#k8s.gcr.io/metrics-server/metrics-server:v0.4.5#' metrics.yaml
+kubectl apply -f metrics.yaml
+
+# Install KubePi
+curl https://raw.githubusercontent.com/KubeOperator/KubePi/master/docs/deploy/kubectl/kubepi.yaml -O
+kubectl apply -f kubepi.yaml
+# 获取 NodeIp
+export NODE_IP=$(kubectl get nodes -o jsonpath="{.items[0].status.addresses[0].address}")
+# 获取 NodePort
+export NODE_PORT=$(kubectl -n kube-system get services kubepi -o jsonpath="{.spec.ports[0].nodePort}")
+# 获取 Address
+echo http://$NODE_IP:$NODE_PORT
+echo "用户名: admin"
+echo "密码: kubepi"
 
 # Install Kubernetes Dashboard
 
